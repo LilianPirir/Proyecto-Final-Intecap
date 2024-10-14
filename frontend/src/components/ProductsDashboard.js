@@ -1,29 +1,31 @@
-// src/components/ProductsDashboard.js
-
-import React, { useState, useEffect } from 'react';
-import { Container, Typography, Button, Dialog, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Container,
+  Typography,
+  Button,
+  Dialog,
+  DialogContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  CircularProgress,
+  Snackbar
+} from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
-import api from '../services/api';
+import useFetchProductos from '../hooks/useFetchProductos';
 import ProductForm from './ProductForm';
-
-const ProductsDashboard = () => {
-  const [productos, setProductos] = useState([]);
+import api from '../services/api';
+const ProductosDashboard = () => {
+  const { productos, loading, error } = useFetchProductos();
   const [openForm, setOpenForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  useEffect(() => {
-    fetchProductos();
-  }, []);
-
-  const fetchProductos = () => {
-    api.get('/productos/listar')
-      .then((response) => {
-        setProductos(response.data);
-      })
-      .catch((error) => {
-        console.error('Error al cargar los productos:', error);
-      });
-  };
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const handleOpenForm = (product) => {
     setSelectedProduct(product);
@@ -32,50 +34,61 @@ const ProductsDashboard = () => {
 
   const handleCloseForm = (updatedProduct) => {
     if (updatedProduct) {
-      if (selectedProduct) {
-        // Actualizar producto existente
-        setProductos(productos.map((product) =>
-          product.id === updatedProduct.id ? updatedProduct : product
-        ));
-      } else {
-        // Agregar nuevo producto
-        setProductos([...productos, updatedProduct]);
-      }
+      setSnackbarMessage(selectedProduct ? 'Producto editado correctamente' : 'Producto agregado correctamente');
+      setSnackbarOpen(true);
     }
     setSelectedProduct(null);
     setOpenForm(false);
   };
 
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      api.delete(`/productos/eliminar/${productId}`)
-        .then(() => {
-          alert('Producto eliminado correctamente');
-          setProductos(productos.filter((product) => product.id !== productId));
-        })
-        .catch((error) => {
-          console.error('Error al eliminar producto:', error);
-        });
+      try {
+        await api.delete(`/productos/eliminar/${productId}`);
+        setSnackbarMessage('Producto eliminado correctamente');
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error al eliminar producto:', error);
+      }
     }
   };
 
+  if (loading) return <CircularProgress />;
+  if (error) return <Typography color="error">Error: {error.message || 'Error desconocido'}</Typography>;
+
   return (
     <Container sx={{ padding: '30px' }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom color="nomar"> {/* Cambia 'nomar' por el color deseado */}
         Gestión de Productos
       </Typography>
-      <Button variant="contained" color="primary" startIcon={<Add />} onClick={() => handleOpenForm(null)} sx={{ marginBottom: '20px' }}>
+      <Button
+        variant="contained"
+        color="primary"
+        startIcon={<Add />}
+        onClick={() => handleOpenForm(null)}
+        sx={{ marginBottom: '20px' }}
+      >
         Agregar Producto
       </Button>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Precio</TableCell>
-              <TableCell>Stock</TableCell>
-              <TableCell>Acciones</TableCell>
+            <TableRow sx={{ backgroundColor: 'green' }}> {/* Color de fondo verde */}
+              <TableCell>
+                <Typography variant="h6" color="white">ID</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="h6" color="white">Nombre</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="h6" color="white">Precio</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="h6" color="white">Stock</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="h6" color="white">Acciones</Typography>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -103,8 +116,14 @@ const ProductsDashboard = () => {
           <ProductForm selectedProduct={selectedProduct} onSuccess={handleCloseForm} />
         </DialogContent>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
     </Container>
   );
 };
 
-export default ProductsDashboard;
+export default ProductosDashboard;

@@ -8,6 +8,7 @@ import ClientesList from './components/ClientesList'; // Mantén el nombre Clien
 import ProductosList from './components/ProductosList'; // Mantén el nombre ProductosList
 import ProductsDashboard from './components/ProductsDashboard';
 import ClientsDashboard from './components/ClientsDashboard';
+import ProductTable from './components/ProductTable'; // Importa el ProductTable
 
 function App() {
   return (
@@ -19,9 +20,11 @@ function App() {
         <Route path="/productos" element={<ProductosList />} />
         <Route path="/dashboard-clientes" element={<ClientsDashboard />} />
         <Route path="/dashboard-productos" element={<ProductsDashboard />} />
+        <Route path="/tabla-productos" element={<ProductTable />} /> 
       </Routes>
     </Router>
   );
 }
 
 export default App;
+

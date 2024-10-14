@@ -1,45 +1,39 @@
+import React, { useEffect, useState } from 'react';
+import { getClientes } from '../services/clientesService';
 
-import api from './api';
+const ClientesList = () => {
+  const [clientes, setClientes] = useState([]);
+  const [error, setError] = useState(null);
 
-export const getClientes = async () => {
-  try {
-    const response = await api.get('/clientes/listar');
-    return response.data;
-  } catch (error) {
-    console.error('Error al obtener los clientes:', error);
-    throw error;
+  useEffect(() => {
+    const fetchClientes = async () => {
+      try {
+        const data = await getClientes();
+        setClientes(data); // Asegúrate de que 'data' sea un array
+      } catch (err) {
+        setError(err); // Manejo del error
+      }
+    };
+
+    fetchClientes();
+  }, []);
+
+  // Manejo de errores
+  if (error) {
+    return <div>Error: {error.message}</div>; // Accediendo a 'message' del objeto de error
   }
+
+  return (
+    <div>
+      {clientes.length > 0 ? (
+        clientes.map((cliente) => (
+          <div key={cliente.id}>{cliente.name}</div> // Accede a las propiedades correctas
+        ))
+      ) : (
+        <p>No hay clientes disponibles</p>
+      )}
+    </div>
+  );
 };
 
-
-export const saveCliente = async (cliente) => {
-  try {
-    const response = await api.post('/clientes/guardar', cliente);
-    return response.data;
-  } catch (error) {
-    console.error('Error al guardar el cliente:', error);
-    throw error;
-  }
-};
-
-
-export const updateCliente = async (id, cliente) => {
-  try {
-    const response = await api.put(`/clientes/actualizar/${id}`, cliente);
-    return response.data;
-  } catch (error) {
-    console.error('Error al actualizar el cliente:', error);
-    throw error;
-  }
-};
-
-
-export const deleteCliente = async (id) => {
-  try {
-    const response = await api.delete(`/clientes/eliminar/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error al eliminar el cliente:', error);
-    throw error;
-  }
-};
+export default ClientesList;
