@@ -49,4 +49,14 @@ const ClientesList = () => {
   );
 };
 
+<<<<<<< Updated upstream
 export default ClientesList;
+=======
+<<<<<<< Updated upstream
+export default ClientList;
+=======
+export default ClientesList;
+
+
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
